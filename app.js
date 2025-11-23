@@ -1,25 +1,7 @@
-<style>
-    body {
-        font-family: 'Inter', sans-serif;
-        background-color: #0f172a;
-        color: #e2e8f0;
-        margin: 0;
-        padding: 0;
-    }
-    .loading-spinner {
-        width: 48px;
-        height: 48px;
-        border: 4px solid #334155;
-        border-top: 4px solid #6366f1;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-</style>
-    
+// Add these imports at the top
+const { useState, useMemo, useEffect } = React;
+
+// Remove duplicate style section and keep only one
 <style>
     body {
         font-family: 'Inter', sans-serif;
@@ -66,7 +48,9 @@
     }
 </style>
 
-const { useState, useMemo, useEffect } = React;
+// Your existing constants and components continue here...
+// [Rest of your code - PIPELINE_STAGES, VULNERABLE_CODE_SNIPPET, etc.]
+
 
 // Icons - We'll use simple text or emojis for now
 const Icons = {
@@ -791,7 +775,7 @@ function DevSecOpsApp() {
 
                 {/* Content Area */}
                 <div className="flex-1 p-8 overflow-y-auto">
-                     {/* ADD THE ARCHITECTURE DIAGRAM HERE */}
+                  {/* ARCHITECTURE DIAGRAM - FIXED PLACEMENT */}
                 <ArchitectureDiagram 
                     activeStageId={currentStage.id}
                     pipelineStatus={pipelineStatus}
@@ -883,37 +867,7 @@ function DevSecOpsApp() {
                 </div>
             </div>
 
-          /*  {/* Simple Guide Modal 
-            {isGuideOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-slate-800 rounded-lg p-6 max-w-2xl w-full mx-4">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold">DevSecOps Guide</h2>
-                            <button 
-                                onClick={() => setIsGuideOpen(false)}
-                                className="text-slate-400 hover:text-white"
-                            >
-                                {Icons.X}
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            <p>This interactive demo shows how security is integrated throughout the CI/CD pipeline.</p>
-                            <div className="bg-slate-700 p-4 rounded">
-                                <h3 className="font-semibold mb-2">Current Stage: {currentStage.name}</h3>
-                                <p className="text-sm text-slate-300">{currentStage.description}</p>
-                            </div>
-                            <div className="bg-slate-700 p-4 rounded">
-                                <h3 className="font-semibold mb-2">Security Status</h3>
-                                <p className="text-sm text-slate-300">
-                                    {isSecure ? 'All security measures implemented' : 'Vulnerabilities detected - click "Fix Vulnerabilities"'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-*/
-                {/* REPLACE YOUR EXISTING MODAL WITH THIS ENHANCED ONE */}
+        {/* REPLACE YOUR EXISTING MODAL WITH THIS ENHANCED ONE */}
         {isGuideOpen && (
             <GuideModal 
                 isOpen={isGuideOpen}
