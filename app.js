@@ -1,3 +1,71 @@
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #0f172a;
+        color: #e2e8f0;
+        margin: 0;
+        padding: 0;
+    }
+    .loading-spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #334155;
+        border-top: 4px solid #6366f1;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+    
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #0f172a;
+        color: #e2e8f0;
+        margin: 0;
+        padding: 0;
+    }
+    .loading-spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #334155;
+        border-top: 4px solid #6366f1;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* NEW ANIMATIONS ADDED BELOW */
+    @keyframes scan {
+        0% { left: -10%; }
+        100% { left: 110%; }
+    }
+    @keyframes moveRight {
+        0% { left: 0%; opacity: 0; }
+        50% { opacity: 1; }
+        100% { left: 100%; opacity: 0; }
+    }
+    @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 5px currentColor; }
+        50% { box-shadow: 0 0 20px currentColor; }
+    }
+    .animate-scan {
+        animation: scan 2s linear infinite;
+    }
+    .animate-move-right {
+        animation: moveRight 1.5s linear infinite;
+    }
+    .animate-pulse-glow {
+        animation: pulse-glow 2s ease-in-out infinite;
+    }
+</style>
+
 const { useState, useMemo, useEffect } = React;
 
 // Icons - We'll use simple text or emojis for now
@@ -80,12 +148,426 @@ app.post('/login', (req, res) => {
   });
 });`;
 
+// ENHANCED GUIDE CONTENT - ADD THIS AFTER EXISTING CONSTANTS
+const GUIDE_CONTENT = [
+    {
+        id: 'intro',
+        title: 'Introduction to DevSecOps',
+        icon: Icons.BookOpen,
+        content: {
+            heading: "What is DevSecOps?",
+            subheading: "Security as a Shared Responsibility",
+            text: "DevSecOps integrates security practices within the DevOps process. It creates a 'Security as Code' culture with collaboration between release engineers and security teams.",
+            points: [
+                "Security becomes everyone's responsibility, not just the security team",
+                "Automated security checks are embedded in the development workflow",
+                "Continuous security feedback enables rapid remediation",
+                "Security shifts left to earlier stages of development"
+            ]
+        }
+    },
+    {
+        id: 'pipeline',
+        title: 'Pipeline Stages',
+        icon: Icons.Activity,
+        content: {
+            heading: "5-Stage DevSecOps Pipeline",
+            subheading: "Security at Every Step",
+            text: "Each stage in the CI/CD pipeline incorporates specific security checks and tools to ensure comprehensive coverage.",
+            stages: PIPELINE_STAGES.map(stage => ({
+                name: stage.name,
+                description: stage.description,
+                securityTools: ['SAST Tools', 'Secret Detection', 'Code Analysis'],
+                risks: ['SQL Injection', 'XSS', 'Hardcoded Secrets']
+            }))
+        }
+    },
+    {
+        id: 'vulnerabilities',
+        title: 'Common Vulnerabilities',
+        icon: Icons.ShieldAlert,
+        content: {
+            heading: "OWASP Top 10 Security Risks",
+            subheading: "Understanding Common Attack Vectors",
+            text: "The Open Web Application Security Project (OWASP) Top 10 represents the most critical security risks to web applications.",
+            vulnerabilities: [
+                {
+                    id: 'A03',
+                    name: 'Injection',
+                    description: 'Untrusted data is sent to an interpreter as part of a command or query.',
+                    example: 'SQL Injection, NoSQL Injection, OS Command Injection',
+                    prevention: 'Use parameterized queries, input validation, stored procedures'
+                },
+                {
+                    id: 'A07',
+                    name: 'Identification and Authentication Failures',
+                    description: 'Confirmation of user identity and session management is done incorrectly.',
+                    example: 'Weak passwords, session fixation, hardcoded credentials',
+                    prevention: 'Multi-factor authentication, strong password policies, secure session management'
+                }
+            ]
+        }
+    },
+    {
+        id: 'checklist',
+        title: 'Security Checklist',
+        icon: Icons.CheckCircle,
+        content: {
+            heading: "DevSecOps Maturity Checklist",
+            subheading: "Track Your Security Progress",
+            text: "Use this checklist to assess and improve your DevSecOps maturity level. Each item represents a key security control."
+        }
+    }
+];
 const StageStatus = {
     IDLE: 'IDLE',
     RUNNING: 'RUNNING',
     SUCCESS: 'SUCCESS',
     ERROR: 'ERROR'
 };
+
+// ARCHITECTURE DIAGRAM COMPONENT - ADD THIS BEFORE DevSecOpsApp FUNCTION
+function ArchitectureDiagram({ activeStageId, pipelineStatus, isSecure }) {
+    const isScanning = pipelineStatus === 'RUNNING' && ['code', 'build', 'test'].includes(activeStageId);
+    const isRuntime = ['deploy', 'monitor'].includes(activeStageId);
+    const showAttack = activeStageId === 'monitor' && !isSecure;
+    const isVulnerableState = !isSecure && (activeStageId === 'code' || activeStageId === 'test' || activeStageId === 'monitor');
+
+    const getNodeState = (nodeType) => {
+        if (pipelineStatus === 'ERROR') return 'border-red-500 bg-red-900/20 text-red-400';
+        if (!isSecure) {
+            if (nodeType === 'api' && activeStageId === 'code') return 'border-yellow-500 bg-yellow-500/10 text-yellow-400 animate-pulse';
+            if (nodeType === 'api' && activeStageId === 'test') return 'border-red-500 bg-red-500/10 text-red-400';
+            if (nodeType === 'db' && activeStageId === 'monitor') return 'border-red-500 bg-red-500/10 text-red-400';
+        }
+        if (isSecure && pipelineStatus === 'SUCCESS') return 'border-green-500 bg-green-500/10 text-green-400';
+        return 'border-slate-600 bg-slate-800/60 text-slate-400';
+    };
+
+    return (
+        <div className={`relative w-full h-64 bg-slate-900 rounded-lg border-2 overflow-hidden flex items-center justify-center mb-6 transition-colors duration-500 ${
+            isVulnerableState ? 'border-red-500/30' : 'border-slate-700'
+        }`}>
+            
+            {/* Background Grid */}
+            <div className="absolute inset-0 opacity-10 bg-gradient-to-r from-blue-500/20 to-purple-500/20"></div>
+            
+            {/* Scanning Animation */}
+            {isScanning && (
+                <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute top-0 bottom-0 w-1 bg-blue-500" 
+                         style={{
+                             animation: 'scan 2s linear infinite',
+                             left: '0%'
+                         }}></div>
+                </div>
+            )}
+
+            {/* Main Architecture Layout */}
+            <div className="relative z-10 flex items-center justify-between w-full px-8">
+                
+                {/* Client Node */}
+                <div className="text-center">
+                    <div className={`w-16 h-16 rounded-xl border-2 flex flex-col items-center justify-center transition-all duration-300 ${getNodeState('frontend')}`}>
+                        <div className="text-xl">{Icons.Globe}</div>
+                        <div className="text-xs mt-1">Client</div>
+                    </div>
+                    {isRuntime && (
+                        <div className={`mt-2 text-xs ${isSecure ? 'text-green-400' : 'text-slate-500'}`}>
+                            {isSecure ? Icons.Lock : Icons.Unlock} HTTPS
+                        </div>
+                    )}
+                </div>
+
+                {/* Connection with WAF */}
+                <div className="flex-1 relative h-1 bg-slate-600 mx-4">
+                    {/* Data Flow Animation */}
+                    {isRuntime && (
+                        <div className={`absolute w-3 h-1 rounded ${isSecure ? 'bg-blue-400' : 'bg-slate-500'}`}
+                             style={{ animation: 'moveRight 1.5s linear infinite' }}></div>
+                    )}
+                    
+                    {/* WAF Shield */}
+                    <div className={`absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full border-2 flex items-center justify-center ${
+                        isRuntime && isSecure ? 'border-blue-500 bg-blue-500/20 text-blue-400' : 'border-slate-600 text-slate-600'
+                    }`}>
+                        {Icons.Shield}
+                    </div>
+                </div>
+
+                {/* API Server Node */}
+                <div className="text-center relative">
+                    {/* Attack Animation */}
+                    {showAttack && (
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+                            <div className="text-red-500 text-sm">{Icons.AlertTriangle}</div>
+                            <div className="text-xs text-red-400">Attack!</div>
+                        </div>
+                    )}
+                    
+                    <div className={`w-20 h-20 rounded-xl border-2 flex flex-col items-center justify-center transition-all duration-300 ${getNodeState('api')}`}>
+                        <div className="text-2xl">{Icons.Server}</div>
+                        <div className="text-xs mt-1">API Server</div>
+                        {isScanning && (
+                            <div className="absolute -top-1 -right-1 text-blue-400" style={{ animation: 'spin 1s linear infinite' }}>
+                                {Icons.Search}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Vulnerability Badges */}
+                    {!isSecure && activeStageId === 'code' && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center text-xs animate-pulse">
+                            {Icons.FileJson}
+                        </div>
+                    )}
+                    {!isSecure && activeStageId === 'test' && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-xs">
+                            {Icons.Bug}
+                        </div>
+                    )}
+                </div>
+
+                {/* Connection to DB */}
+                <div className="flex-1 relative h-1 bg-slate-600 mx-4">
+                    {/* Database Traffic */}
+                    {isRuntime && (
+                        <div className={`absolute w-2 h-2 rounded-full ${isSecure ? 'bg-green-400' : 'bg-slate-500'}`}
+                             style={{ animation: 'moveRight 2s linear infinite', animationDelay: '0.5s' }}></div>
+                    )}
+                    
+                    {/* Malicious Payload */}
+                    {showAttack && (
+                        <div className="absolute w-3 h-3 bg-red-500 rotate-45"
+                             style={{ animation: 'moveRight 1s linear infinite' }}></div>
+                    )}
+                </div>
+
+                {/* Database Node */}
+                <div className="text-center">
+                    <div className={`w-16 h-16 rounded-xl border-2 flex flex-col items-center justify-center transition-all duration-300 ${getNodeState('db')}`}>
+                        <div className="text-xl">{Icons.Database}</div>
+                        <div className="text-xs mt-1">Database</div>
+                    </div>
+                    
+                    {/* Intrusion Alert */}
+                    {showAttack && (
+                        <div className="mt-2 px-2 py-1 bg-red-500/20 border border-red-500/50 rounded text-xs text-red-400 animate-pulse">
+                            SQL Injection!
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Stage Description */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                <div className="bg-slate-800/80 border border-slate-600 rounded-full px-4 py-2 flex items-center gap-3">
+                    <div className={`p-2 rounded-full ${isVulnerableState ? 'bg-yellow-500/20 text-yellow-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                        {PIPELINE_STAGES.find(s => s.id === activeStageId)?.icon}
+                    </div>
+                    <div className="text-sm">
+                        <div className="text-xs text-slate-400 uppercase tracking-wide">
+                            {PIPELINE_STAGES.find(s => s.id === activeStageId)?.name}
+                        </div>
+                        <div className="text-slate-200">
+                            {PIPELINE_STAGES.find(s => s.id === activeStageId)?.description}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+// ENHANCED GUIDE MODAL COMPONENT - ADD THIS AFTER ArchitectureDiagram BUT BEFORE DevSecOpsApp
+function GuideModal({ isOpen, onClose, currentStageIndex, isSecure, securityScore }) {
+    const [activeTab, setActiveTab] = useState('intro');
+    
+    if (!isOpen) return null;
+
+    const activeContent = GUIDE_CONTENT.find(item => item.id === activeTab)?.content;
+    const currentStage = PIPELINE_STAGES[currentStageIndex];
+
+    // Dynamic checklist based on current state
+    const dynamicChecklist = [
+        {
+            id: 1,
+            title: "Secret Management (OWASP A07)",
+            description: "Secrets removed from source code and managed via environment variables",
+            met: isSecure,
+            stage: "Code"
+        },
+        {
+            id: 2,
+            title: "Input Validation (OWASP A03)",
+            description: "Parameterized queries implemented to prevent SQL injection",
+            met: isSecure,
+            stage: "Code"
+        },
+        {
+            id: 3,
+            title: "Dependency Scanning (SCA)",
+            description: "Automated analysis of third-party libraries for known CVEs",
+            met: currentStageIndex >= 1,
+            stage: "Build"
+        },
+        {
+            id: 4,
+            title: "Static Analysis (SAST)",
+            description: "Source code scanned for vulnerabilities before deployment",
+            met: currentStageIndex >= 2,
+            stage: "Test"
+        },
+        {
+            id: 5,
+            title: "Infrastructure Security",
+            description: "Infrastructure as Code validated and scanned for misconfigurations",
+            met: currentStageIndex >= 3,
+            stage: "Deploy"
+        },
+        {
+            id: 6,
+            title: "Runtime Protection",
+            description: "WAF and monitoring implemented for production environment",
+            met: currentStageIndex >= 4,
+            stage: "Monitor"
+        }
+    ];
+
+    const completedItems = dynamicChecklist.filter(item => item.met).length;
+    const totalItems = dynamicChecklist.length;
+
+    return (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-800 rounded-xl border border-slate-600 max-w-4xl w-full max-h-[90vh] overflow-hidden flex">
+                
+                {/* Sidebar Navigation */}
+                <div className="w-64 bg-slate-900 border-r border-slate-700 p-4 overflow-y-auto">
+                    <div className="flex items-center gap-2 text-blue-400 mb-6">
+                        <span className="text-lg">{Icons.BookOpen}</span>
+                        <span className="font-bold">Security Guide</span>
+                    </div>
+                    
+                    <nav className="space-y-1">
+                        {GUIDE_CONTENT.map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => setActiveTab(item.id)}
+                                className={`w-full text-left px-3 py-3 rounded-lg flex items-center gap-3 transition-all ${
+                                    activeTab === item.id 
+                                    ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' 
+                                    : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+                                }`}
+                            >
+                                <span className="text-lg">{item.icon}</span>
+                                <span className="text-sm font-medium">{item.title}</span>
+                            </button>
+                        ))}
+                    </nav>
+
+                    {/* Progress Summary */}
+                    <div className="mt-6 p-3 bg-slate-800 rounded-lg border border-slate-700">
+                        <div className="text-xs text-slate-400 mb-2">Security Progress</div>
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="text-sm font-semibold text-green-400">
+                                {completedItems}/{totalItems} Complete
+                            </div>
+                            <div className="text-lg font-bold">{securityScore}%</div>
+                        </div>
+                        <div className="w-full bg-slate-700 rounded-full h-2">
+                            <div 
+                                className="h-2 rounded-full bg-green-500 transition-all duration-500"
+                                style={{ width: `${(completedItems / totalItems) * 100}%` }}
+                            ></div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Content Area */}
+                <div className="flex-1 flex flex-col">
+                    <div className="flex justify-between items-center p-6 border-b border-slate-700">
+                        <h2 className="text-xl font-bold text-white">{GUIDE_CONTENT.find(item => item.id === activeTab)?.title}</h2>
+                        <button 
+                            onClick={onClose}
+                            className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-700 transition-colors"
+                        >
+                            <span className="text-lg">{Icons.X}</span>
+                        </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-6">
+                        {activeTab === 'checklist' ? (
+                            <div className="space-y-4">
+                                <div className="grid gap-4">
+                                    {dynamicChecklist.map((item) => (
+                                        <div 
+                                            key={item.id}
+                                            className={`p-4 rounded-lg border-2 transition-all duration-300 ${
+                                                item.met 
+                                                ? 'bg-green-500/10 border-green-500/30' 
+                                                : 'bg-slate-700/50 border-slate-600'
+                                            }`}
+                                        >
+                                            <div className="flex items-start gap-4">
+                                                <div className={`p-2 rounded-full flex-shrink-0 ${
+                                                    item.met ? 'bg-green-500 text-white' : 'bg-slate-600 text-slate-400'
+                                                }`}>
+                                                    {item.met ? Icons.CheckCircle : Icons.Circle}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <h3 className={`font-bold ${item.met ? 'text-green-200' : 'text-slate-200'}`}>
+                                                            {item.title}
+                                                        </h3>
+                                                        <span className="text-xs uppercase font-bold px-2 py-1 rounded bg-slate-600 text-slate-300">
+                                                            {item.stage}
+                                                        </span>
+                                                        {!item.met && item.stage === currentStage.id && (
+                                                            <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded animate-pulse">
+                                                                Current Stage
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-slate-300 text-sm">{item.description}</p>
+                                                </div>
+                                                {item.met && (
+                                                    <div className="text-green-500 font-bold text-sm">
+                                                        COMPLIANT
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                <div className="prose prose-invert max-w-none">
+                                    <h1 className="text-2xl font-bold text-white mb-2">{activeContent.heading}</h1>
+                                    <h2 className="text-lg text-blue-400 font-medium mb-4">{activeContent.subheading}</h2>
+                                    <p className="text-slate-300 text-lg leading-relaxed mb-6">{activeContent.text}</p>
+                                </div>
+
+                                {activeContent.points && (
+                                    <div className="bg-slate-700/50 rounded-lg p-6 border border-slate-600">
+                                        <h3 className="text-lg font-semibold text-white mb-4">Key Points</h3>
+                                        <ul className="space-y-3">
+                                            {activeContent.points.map((point, index) => (
+                                                <li key={index} className="flex items-start gap-3 text-slate-200">
+                                                    <span className="text-green-400 mt-1">{Icons.CheckCircle}</span>
+                                                    <span>{point}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 // Main App Component
 function DevSecOpsApp() {
@@ -309,6 +791,12 @@ function DevSecOpsApp() {
 
                 {/* Content Area */}
                 <div className="flex-1 p-8 overflow-y-auto">
+                     {/* ADD THE ARCHITECTURE DIAGRAM HERE */}
+                <ArchitectureDiagram 
+                    activeStageId={currentStage.id}
+                    pipelineStatus={pipelineStatus}
+                    isSecure={isSecure}
+                />
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Code Panel */}
                         <div className="space-y-4">
@@ -395,7 +883,7 @@ function DevSecOpsApp() {
                 </div>
             </div>
 
-            {/* Simple Guide Modal */}
+          /*  {/* Simple Guide Modal 
             {isGuideOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-slate-800 rounded-lg p-6 max-w-2xl w-full mx-4">
@@ -424,32 +912,9 @@ function DevSecOpsApp() {
                     </div>
                 </div>
             )}
-        </div>
-    );
- return (
-        <div className="flex h-screen bg-slate-900 text-white">
-            {/* ... existing sidebar ... */}
-            
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col">
-                {/* ... existing header ... */}
-
-                {/* Content Area - UPDATED */}
-                <div className="flex-1 p-8 overflow-y-auto">
-                    {/* Architecture Diagram */}
-                    <ArchitectureDiagram 
-                        activeStageId={currentStage.id}
-                        pipelineStatus={pipelineStatus}
-                        isSecure={isSecure}
-                    />
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* ... existing code and logs panels ... */}
-                    </div>
-                </div>
-            </div>
-
-            {/* Enhanced Guide Modal */}
+*/
+                {/* REPLACE YOUR EXISTING MODAL WITH THIS ENHANCED ONE */}
+        {isGuideOpen && (
             <GuideModal 
                 isOpen={isGuideOpen}
                 onClose={() => setIsGuideOpen(false)}
@@ -457,10 +922,10 @@ function DevSecOpsApp() {
                 isSecure={isSecure}
                 securityScore={securityScore}
             />
+        )}
         </div>
     );
-}
-
+ 
 // Render the app
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<DevSecOpsApp />);
