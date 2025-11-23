@@ -1,58 +1,7 @@
-// Add these imports at the top
+// Add this inside the <script type="text/babel"> tag in index.html
 const { useState, useMemo, useEffect } = React;
 
-// Remove duplicate style section and keep only one
-<style>
-    body {
-        font-family: 'Inter', sans-serif;
-        background-color: #0f172a;
-        color: #e2e8f0;
-        margin: 0;
-        padding: 0;
-    }
-    .loading-spinner {
-        width: 48px;
-        height: 48px;
-        border: 4px solid #334155;
-        border-top: 4px solid #6366f1;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    /* NEW ANIMATIONS ADDED BELOW */
-    @keyframes scan {
-        0% { left: -10%; }
-        100% { left: 110%; }
-    }
-    @keyframes moveRight {
-        0% { left: 0%; opacity: 0; }
-        50% { opacity: 1; }
-        100% { left: 100%; opacity: 0; }
-    }
-    @keyframes pulse-glow {
-        0%, 100% { box-shadow: 0 0 5px currentColor; }
-        50% { box-shadow: 0 0 20px currentColor; }
-    }
-    .animate-scan {
-        animation: scan 2s linear infinite;
-    }
-    .animate-move-right {
-        animation: moveRight 1.5s linear infinite;
-    }
-    .animate-pulse-glow {
-        animation: pulse-glow 2s ease-in-out infinite;
-    }
-</style>
-
-// Your existing constants and components continue here...
-// [Rest of your code - PIPELINE_STAGES, VULNERABLE_CODE_SNIPPET, etc.]
-
-
-// Icons - We'll use simple text or emojis for now
+// Icons - Using emojis for simplicity
 const Icons = {
     Code: '💻', Box: '📦', ShieldCheck: '🛡️', Rocket: '🚀', Activity: '📊',
     Play: '▶️', CheckCircle: '✅', Terminal: '💻', RefreshCw: '🔄', 
@@ -60,7 +9,8 @@ const Icons = {
     ShieldAlert: '⚠️', Shield: '🛡️', Bot: '🤖', Sparkles: '✨',
     Loader2: '⏳', AlertTriangle: '⚠️', Server: '🖥️', Database: '💾',
     Globe: '🌐', Users: '👥', Cloud: '☁️', UserX: '👤', Bug: '🐛',
-    FileJson: '📄', Search: '🔍', X: '✖️', ChevronRight: '›'
+    FileJson: '📄', Search: '🔍', X: '✖️', ChevronRight: '›',
+    Circle: '⚪'
 };
 
 // Constants
@@ -132,7 +82,6 @@ app.post('/login', (req, res) => {
   });
 });`;
 
-// ENHANCED GUIDE CONTENT - ADD THIS AFTER EXISTING CONSTANTS
 const GUIDE_CONTENT = [
     {
         id: 'intro',
@@ -203,6 +152,7 @@ const GUIDE_CONTENT = [
         }
     }
 ];
+
 const StageStatus = {
     IDLE: 'IDLE',
     RUNNING: 'RUNNING',
@@ -210,7 +160,7 @@ const StageStatus = {
     ERROR: 'ERROR'
 };
 
-// ARCHITECTURE DIAGRAM COMPONENT - ADD THIS BEFORE DevSecOpsApp FUNCTION
+// Architecture Diagram Component
 function ArchitectureDiagram({ activeStageId, pipelineStatus, isSecure }) {
     const isScanning = pipelineStatus === 'RUNNING' && ['code', 'build', 'test'].includes(activeStageId);
     const isRuntime = ['deploy', 'monitor'].includes(activeStageId);
@@ -362,7 +312,8 @@ function ArchitectureDiagram({ activeStageId, pipelineStatus, isSecure }) {
         </div>
     );
 }
-// ENHANCED GUIDE MODAL COMPONENT - ADD THIS AFTER ArchitectureDiagram BUT BEFORE DevSecOpsApp
+
+// Guide Modal Component
 function GuideModal({ isOpen, onClose, currentStageIndex, isSecure, securityScore }) {
     const [activeTab, setActiveTab] = useState('intro');
     
@@ -478,7 +429,7 @@ function GuideModal({ isOpen, onClose, currentStageIndex, isSecure, securityScor
                         </button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-6">
+                    <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
                         {activeTab === 'checklist' ? (
                             <div className="space-y-4">
                                 <div className="grid gap-4">
@@ -674,7 +625,7 @@ function DevSecOpsApp() {
                     <p className="text-sm text-slate-400 mt-2">Interactive Pipeline Demo</p>
                     <button 
                         onClick={() => setIsGuideOpen(true)}
-                        className="mt-4 w-full py-2 px-3 bg-blue-500 hover:bg-blue-600 rounded text-sm"
+                        className="mt-4 w-full py-2 px-3 bg-blue-500 hover:bg-blue-600 rounded text-sm transition-colors"
                     >
                         {Icons.BookOpen} Security Guide
                     </button>
@@ -693,12 +644,12 @@ function DevSecOpsApp() {
                                 style={{ width: `${securityScore}%` }}
                             ></div>
                         </div>
-                        <div className="text-sm mt-2 text-center">{maturity.label}</div>
+                        <div className={`text-sm mt-2 text-center ${maturity.color}`}>{maturity.label}</div>
                     </div>
                 </div>
 
                 {/* Pipeline Stages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
                     {PIPELINE_STAGES.map((stage, index) => {
                         const isActive = index === currentStageIndex;
                         const isCompleted = index < currentStageIndex;
@@ -706,7 +657,7 @@ function DevSecOpsApp() {
                         return (
                             <div 
                                 key={stage.id}
-                                className={`p-3 rounded-lg flex items-center gap-3 ${
+                                className={`p-3 rounded-lg flex items-center gap-3 transition-all ${
                                     isActive ? 'bg-blue-500/20 border border-blue-500' : 'bg-slate-700'
                                 }`}
                             >
@@ -723,7 +674,7 @@ function DevSecOpsApp() {
                                         {(isCompleted || (isActive && pipelineStatus === StageStatus.SUCCESS)) && 'Completed'}
                                     </div>
                                 </div>
-                                {isCompleted && <span>{Icons.CheckCircle}</span>}
+                                {isCompleted && <span className="text-green-400">{Icons.CheckCircle}</span>}
                             </div>
                         );
                     })}
@@ -732,7 +683,7 @@ function DevSecOpsApp() {
                 <div className="p-4 border-t border-slate-700">
                     <button 
                         onClick={handleReset}
-                        className="w-full py-2 px-3 bg-slate-600 hover:bg-slate-500 rounded text-sm"
+                        className="w-full py-2 px-3 bg-slate-600 hover:bg-slate-500 rounded text-sm transition-colors"
                     >
                         {Icons.RefreshCw} Reset Simulation
                     </button>
@@ -751,21 +702,22 @@ function DevSecOpsApp() {
                     </h2>
                     <div className="flex gap-3">
                         {pipelineStatus === StageStatus.RUNNING ? (
-                            <button disabled className="px-5 py-2 bg-slate-700 text-slate-400 rounded text-sm">
-                                {Icons.Loader2} Running...
+                            <button disabled className="px-5 py-2 bg-slate-700 text-slate-400 rounded text-sm flex items-center gap-2">
+                                <span className="animate-spin">{Icons.Loader2}</span>
+                                Running...
                             </button>
                         ) : pipelineStatus === StageStatus.SUCCESS ? (
                             <button 
                                 onClick={handleNext}
                                 disabled={currentStageIndex === PIPELINE_STAGES.length - 1}
-                                className="px-5 py-2 bg-green-600 hover:bg-green-500 rounded text-sm"
+                                className="px-5 py-2 bg-green-600 hover:bg-green-500 rounded text-sm flex items-center gap-2 transition-colors disabled:opacity-50"
                             >
                                 Next Stage {Icons.ArrowRight}
                             </button>
                         ) : (
                             <button 
                                 onClick={handleRunStage}
-                                className="px-5 py-2 bg-green-600 hover:bg-green-500 rounded text-sm"
+                                className="px-5 py-2 bg-green-600 hover:bg-green-500 rounded text-sm flex items-center gap-2 transition-colors"
                             >
                                 {Icons.Play} Run Pipeline
                             </button>
@@ -774,13 +726,13 @@ function DevSecOpsApp() {
                 </header>
 
                 {/* Content Area */}
-                <div className="flex-1 p-8 overflow-y-auto">
-                  {/* ARCHITECTURE DIAGRAM - FIXED PLACEMENT */}
-                <ArchitectureDiagram 
-                    activeStageId={currentStage.id}
-                    pipelineStatus={pipelineStatus}
-                    isSecure={isSecure}
-                />
+                <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+                    <ArchitectureDiagram 
+                        activeStageId={currentStage.id}
+                        pipelineStatus={pipelineStatus}
+                        isSecure={isSecure}
+                    />
+                    
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Code Panel */}
                         <div className="space-y-4">
@@ -790,7 +742,7 @@ function DevSecOpsApp() {
                                     <button 
                                         onClick={handleFixCode}
                                         disabled={isSecure}
-                                        className={`px-3 py-1 rounded text-xs ${
+                                        className={`px-3 py-1 rounded text-xs flex items-center gap-1 transition-colors ${
                                             isSecure ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
                                         }`}
                                     >
@@ -803,7 +755,7 @@ function DevSecOpsApp() {
                                 <div className="bg-slate-900 px-4 py-2 border-b border-slate-700 text-sm font-mono">
                                     auth_service.js
                                 </div>
-                                <pre className="p-4 text-sm font-mono text-slate-300 overflow-auto max-h-80">
+                                <pre className="p-4 text-sm font-mono text-slate-300 overflow-auto max-h-80 custom-scrollbar">
                                     <code>{codeContent}</code>
                                 </pre>
                             </div>
@@ -813,10 +765,10 @@ function DevSecOpsApp() {
                         <div className="space-y-4">
                             <h3 className="text-sm font-semibold text-slate-400">Pipeline Logs</h3>
                             <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden h-80">
-                                <div className="bg-slate-900 px-4 py-2 border-b border-slate-700 text-sm">
+                                <div className="bg-slate-900 px-4 py-2 border-b border-slate-700 text-sm flex items-center gap-2">
                                     {Icons.Terminal} CI/CD Runner
                                 </div>
-                                <div className="p-4 font-mono text-sm overflow-y-auto h-64">
+                                <div className="p-4 font-mono text-sm overflow-y-auto h-64 custom-scrollbar">
                                     {logs.length === 0 ? (
                                         <div className="text-slate-500 text-center py-8">
                                             Waiting for pipeline to start...
@@ -825,7 +777,7 @@ function DevSecOpsApp() {
                                         logs.map((log, i) => (
                                             <div 
                                                 key={i}
-                                                className={`border-l-2 pl-2 py-1 ${
+                                                className={`border-l-2 pl-2 py-1 mb-1 ${
                                                     log.level === 'ERROR' ? 'border-red-500 text-red-400' :
                                                     log.level === 'SUCCESS' ? 'border-green-500 text-green-400' :
                                                     'border-slate-600 text-slate-300'
@@ -843,43 +795,23 @@ function DevSecOpsApp() {
                             </div>
                         </div>
                     </div>
-
-                    {/* Architecture Diagram Placeholder */}
-                    <div className="mt-8 p-6 bg-slate-800 rounded-lg border border-slate-700">
-                        <h3 className="text-sm font-semibold text-slate-400 mb-4">Architecture Overview</h3>
-                        <div className="flex justify-between items-center text-center">
-                            <div className="p-4 border border-slate-600 rounded">
-                                <div className="text-2xl mb-2">{Icons.Globe}</div>
-                                <div className="text-sm">Client</div>
-                            </div>
-                            <div className="text-slate-500">→</div>
-                            <div className="p-4 border border-slate-600 rounded">
-                                <div className="text-2xl mb-2">{Icons.Server}</div>
-                                <div className="text-sm">API Server</div>
-                            </div>
-                            <div className="text-slate-500">→</div>
-                            <div className="p-4 border border-slate-600 rounded">
-                                <div className="text-2xl mb-2">{Icons.Database}</div>
-                                <div className="text-sm">Database</div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
-        {/* REPLACE YOUR EXISTING MODAL WITH THIS ENHANCED ONE */}
-        {isGuideOpen && (
-            <GuideModal 
-                isOpen={isGuideOpen}
-                onClose={() => setIsGuideOpen(false)}
-                currentStageIndex={currentStageIndex}
-                isSecure={isSecure}
-                securityScore={securityScore}
-            />
-        )}
+            {/* Guide Modal */}
+            {isGuideOpen && (
+                <GuideModal 
+                    isOpen={isGuideOpen}
+                    onClose={() => setIsGuideOpen(false)}
+                    currentStageIndex={currentStageIndex}
+                    isSecure={isSecure}
+                    securityScore={securityScore}
+                />
+            )}
         </div>
     );
- 
+}
+
 // Render the app
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<DevSecOpsApp />);
